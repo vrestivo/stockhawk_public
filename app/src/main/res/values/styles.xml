@@ -1,0 +1,117 @@
+<resources>
+
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="toolbarStyle">@style/Toolbar</item>
+    </style>
+
+
+
+    <!-- toolbar style -->
+    <style name="Toolbar" parent="Widget.AppCompat.Toolbar">
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:textColorSecondary">@android:color/white</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:elevation">4dp</item>
+        <item name="android:background">@color/material_blue_500</item>
+        <item name="popupTheme">@style/Theme.AppCompat.Light</item>
+    </style>
+
+
+    <style name="Toolbar.TitleText" parent="Toolbar">
+        <item name="android:textSize">24sp</item>
+    </style>
+
+
+    <style name="Toolbar.TitleTextTablet" parent="Toolbar">
+        <item name="android:textSize">32sp</item>
+    </style>
+
+
+
+    <!-- add stock dialog style -->
+    <style name="AddStockDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
+    </style>
+
+    <!-- error message style -->
+    <style name="ErrorMessage">
+        <item name="android:layout_centerHorizontal">true</item>
+        <item name="android:textColor">@color/secondary_text</item>
+    </style>
+
+    <style name="Divider" >
+        <item name="android:background">@color/material_divider</item>
+        <item name="android:layout_margin">8dp</item>
+    </style>
+
+    <style name="PercentChangeTextStyle">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">#FFF</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+
+
+    <style name="BidPriceTextStyle">
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="StockSymbolTextStyle">
+        <item name="android:textSize">25sp</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+    <!-- Widget Styling -->
+
+    <style name="WidgetBanner">
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:elevation">4dp</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@color/stock_hawk_udacity_blue_500</item>
+    </style>
+
+    <style name="StockSymbolTextStyleWidget">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textColor">#FFF</item>
+    </style>
+
+    <style name="PercentChangeTextStyleWidget">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">#FFF</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="BidPriceTextStyleWidget">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">#FFF</item>
+    </style>
+
+    <style name="WidgetErrorMessage">
+        <item name="android:layout_centerHorizontal">true</item>
+        <item name="android:textColor">#FFF</item>
+        <item name="android:textAlignment">center</item>
+    </style>
+
+    <style xmlns:app="http://schemas.android.com/apk/res-auto" name="FloatingActionButton">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_gravity">bottom|end</item>
+        <item name="android:layout_margin">16dp</item>
+        <item name="android:src">@drawable/fab_plus</item>
+        <item name="android:onClick">button</item>
+        <item name="android:color">@color/material_blue_500</item>
+    </style>
+
+
+
+
+
+
+</resources>

@@ -1,0 +1,81 @@
+<resources>
+    <string name="app_name">Stock Hawk</string>
+
+    <!-- preference used to tracks app status codes -->
+    <string name="pref_status_key">status</string>
+
+    <!-- preference used to track not found stock ticker -->
+    <string name="pref_not_found_key">not_found</string>
+
+    <string name="pref_stocks_initialized_key" translatable="false">initialized</string>
+
+    <string name="pref_stocks_key">stocks</string>
+
+    <string name="pref_display_mode_key">displayMode</string>
+    <string name="pref_display_mode_default">@string/pref_display_mode_percentage_key</string>
+
+    <string name="pref_display_mode_absolute_key">absolute</string>
+    <string name="pref_display_mode_percentage_key">percentage</string>
+
+
+    <!-- default stocks symbols -->
+    <string name="default_stocks_yahoo">YHOO</string>
+    <string name="default_stocks_apple">AAPL</string>
+    <string name="default_stocks_microsoft">MSFT</string>
+    <string name="default_stocks_facebook">FB</string>
+
+    <!-- chart pertaining strings -->
+    <string name="chart_x_axis_label">Date</string>
+    <string name="chart_y_axis_label">Price</string>
+
+
+    <string name="action_change_units">@string/pref_display_mode_key</string>
+    <string name="action_refresh">Refresh</string>
+
+
+
+    <string name="dialog_title">Add Stock</string>
+    <string name="dialog_hint">Enter symbol (e.g. GOOG)</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_add">Add</string>
+
+    <!-- error messages -->
+    <string name="error_no_network">No network connectivity!\nWill display data when network becomes available.</string>
+    <string name="error_no_stocks">No stocks added! Hit the floating action button to add one.</string>
+    <string name="error_no_network_old_data">No network available. Data may be old.</string>
+    <string name="error_invalid_data">Data Error. If you are behind a captive portal check connection and refresh manually.</string>
+
+    <!-- widget empty view mesasge -->
+    <string name="error_widget_no_data">Data Unavailable.</string>
+
+    <!-- toast messages -->
+    <string name="toast_stock_added_no_connectivity">Symbol %s added. Will refresh when network becomes available.</string>
+    <string name="toast_no_connectivity">Will refresh when network available.</string>
+    <string name="toast_ticker_not_found">Ticker: %1$s not found.</string>
+    <string name="toast_initializing">Initializing...</string>
+    <string name="toast_refresh_complete">Data refresh complete.</string>
+
+    <!-- Accessibility strings -->
+
+    <!-- Main Fragment A11y Strings -->
+    <string name="a11y_text_empty_view_error_message">Error Message</string>
+    <string name="a11y_swipe_refresh_layout_description">Swipe refresh layout.  Swipe up to refresh</string>
+    <string name="a11y_fab_description">Add stock</string>
+    <string name="a11y_stock_list_description">Stock quotes</string>
+
+    <!-- stock list item A11y strings -->
+    <string name="a11y_quote_item_symbol">Stock symbol</string>
+    <string name="a11y_quote_item_price">Stock price</string>
+    <string name="a11y_quite_item_change">Stock price change</string>
+    <string name="a11y_quote_list_item_description">Stock symbol, price, and price change</string>
+
+
+    <!-- add stock dialog A11y strings -->
+    <string name="a11y_add_stock_dialog_pisitive_button">Ok. Add stock</string>
+    <string name="a11y_add_stock_dialog_negative_button">Cancel</string>
+
+    <!-- stock chart A11y string -->
+    <string name="a11y_chart_activity_description">Stock chart Activity</string>
+    <string name="a11y_chart_description">Stock Chart</string>
+
+</resources>

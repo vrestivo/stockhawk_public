@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.udacity.stockhawk">
+
+    <permission
+        android:name="com.udacity.stockhawk.READ_URI"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="com.udacity.stockhawk.READ_URI" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.Manifest.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <application
+        android:name=".StockHawkApp"
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        tools:ignore="GoogleAppIndexingWarning">
+        <activity android:name=".ui.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ui.ChartActivity"
+            android:label="@string/a11y_chart_description">
+
+        </activity>
+
+        <service
+            android:name=".sync.QuoteIntentService"
+            android:exported="false" />
+
+        <provider
+            android:name=".data.StockProvider"
+            android:authorities="com.udacity.stockhawk"
+            android:exported="false"
+            android:grantUriPermissions="true"
+            android:permission="com.udacity.stockhawk.READ_URI"
+            android:syncable="true">
+
+
+        </provider>
+
+        <service
+            android:name=".sync.QuoteJobService"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <receiver android:name=".widget.WidgetProvider">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.udacity.stockhawk.ACTION_DATA_UPDATED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/app_widget_provider_info" />
+        </receiver>
+
+        <service
+            android:name=".widget.WidgetRemoteViewService"
+            android:permission="android.permission.BIND_REMOTEVIEWS"></service>
+
+
+    </application>
+
+</manifest>
