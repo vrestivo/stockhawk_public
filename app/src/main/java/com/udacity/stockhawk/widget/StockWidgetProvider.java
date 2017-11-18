@@ -6,25 +6,16 @@ import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.database.ContentObserver;
-import android.database.Cursor;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.support.v4.widget.CursorAdapter;
 import android.widget.RemoteViews;
-import android.widget.Toast;
 
 import com.udacity.stockhawk.R;
-import com.udacity.stockhawk.data.Contract;
-import com.udacity.stockhawk.data.StockProvider;
-import com.udacity.stockhawk.sync.QuoteJobService;
 import com.udacity.stockhawk.sync.QuoteSyncJob;
 
 /**
  * Created by devbox on 1/19/17.
  */
 
-public class WidgetProvider extends AppWidgetProvider {
+public class StockWidgetProvider extends AppWidgetProvider {
 
     ContentResolver contentResolver;
 
@@ -34,24 +25,23 @@ public class WidgetProvider extends AppWidgetProvider {
 
         contentResolver = context.getContentResolver();
 
-
         for(int i =0; i < appWidgetIds.length; i++ ){
             int widgetId =  appWidgetIds[i];
 
             RemoteViews views = buildLayout(context, widgetId);
-
             views.setEmptyView(R.id.widget_list_view, R.id.widget_empty_view);
-
             appWidgetManager.updateAppWidget(widgetId, views);
         }
         super.onUpdate(context, appWidgetManager, appWidgetIds);
     }
+
 
     @Override
     public void onEnabled(Context context) {
         super.onEnabled(context);
 
     }
+
 
     @Override
     public void onDisabled(Context context) {
@@ -66,8 +56,8 @@ public class WidgetProvider extends AppWidgetProvider {
         remoteViews.setRemoteAdapter(R.id.widget_list_view, intent);
 
         return remoteViews;
-
     }
+
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -75,7 +65,7 @@ public class WidgetProvider extends AppWidgetProvider {
         if(intent.getAction().equals(QuoteSyncJob.ACTION_DATA_UPDATED)){
             AppWidgetManager manager = AppWidgetManager.getInstance(context);
             manager.notifyAppWidgetViewDataChanged(
-                    manager.getAppWidgetIds(new ComponentName(context, WidgetProvider.class)),
+                    manager.getAppWidgetIds(new ComponentName(context, StockWidgetProvider.class)),
                     R.id.widget_list_view);
         }
     }

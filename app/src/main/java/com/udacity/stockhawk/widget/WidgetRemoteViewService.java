@@ -39,12 +39,8 @@ public class WidgetRemoteViewService extends RemoteViewsService {
         return new WidgetRemoteViewFactory(this.getApplicationContext(), intent);
     }
 
-
-    //TODO finish the class
-
 }
 
-//TODO finish the implementeation
 class WidgetRemoteViewFactory implements RemoteViewsService.RemoteViewsFactory {
 
     private Context mContext;
@@ -97,6 +93,7 @@ class WidgetRemoteViewFactory implements RemoteViewsService.RemoteViewsFactory {
 
 
         ContentResolver contentResolver = mContext.getContentResolver();
+
         final long token = Binder.clearCallingIdentity();
         try {
 
