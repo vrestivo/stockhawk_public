@@ -6,7 +6,7 @@ Key Features:
 
 1) Supports Google Talkback accessibility feature
 2) Use of 3rd party libraries to fetch and present data
-3) App state retention via SharedPrefences
+3) App data persistence via SQLite database and SharedPrefences
 4) Right to left layout support via flexible layout design
 5) Internationalization support for Egyptian Arabic translation via alternate strings.xml resource
 6) Fragment based UI design with optimized layout for phones and tablets
