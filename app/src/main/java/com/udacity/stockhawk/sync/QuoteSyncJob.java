@@ -9,8 +9,6 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.Looper;
-import android.util.Log;
 
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
@@ -19,7 +17,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -45,151 +42,137 @@ public final class QuoteSyncJob {
     }
 
     static void getQuotes(Context context) {
+        Map<String, Stock> yahooQuotes = getQuotesFromYahoo(context);
+        updateQuotesInDB(parseQuotesIntoCVs(yahooQuotes, context), context);
+    }
 
+    public static Map<String, Stock> getQuotesFromYahoo(Context context) {
         PrefUtils.setPrefStatusCode(context, PrefUtils.STATUS_UNKNOWN);
-
+        //TODO make this user defined
         Calendar from = Calendar.getInstance();
         Calendar to = Calendar.getInstance();
         from.add(Calendar.YEAR, -YEARS_OF_HISTORY);
 
+        Map<String, Stock> quotes = null;
+        Set<String> stockTickerSet = PrefUtils.getStocks(context);
+        Iterator<String> iterator = stockTickerSet.iterator();
+
+        if (stockTickerSet == null || stockTickerSet.size() < 1) {
+            return null;
+        }
+
+        String[] quotesToGet = new String[stockTickerSet.size()];
+        stockTickerSet.toArray(quotesToGet);
         try {
-
-            Set<String> stockPref = PrefUtils.getStocks(context);
-            Set<String> stockCopy = new HashSet<>();
-            stockCopy.addAll(stockPref);
-            String[] stockArray = stockPref.toArray(new String[stockPref.size()]);
-
-            Timber.d(stockCopy.toString());
-
-            if (stockArray.length == 0) {
-                return;
-            }
-
-            Map<String, Stock> quotes = null;
-            Iterator<String> iterator = null;
-
-            try {
-                quotes = YahooFinance.get(stockArray);
-                iterator = stockCopy.iterator();
-                Timber.d(quotes.toString());
-
-            }
-            catch (Exception error){
-                if(error instanceof StringIndexOutOfBoundsException){
-                    PrefUtils.setPrefStatusCode(context, PrefUtils.STATUS_DATA_ERROR);
-                    return;
-                }
-                else{
-                    PrefUtils.setPrefStatusCode(context, PrefUtils.STATUS_DATA_ERROR);
-                    return;
-                }
-            }
-
-
-            ArrayList<ContentValues> quoteCVs = new ArrayList<>();
-
-            while (iterator != null && iterator.hasNext()) {
-                String symbol = iterator.next();
-
-                //empty string check
-                if (!symbol.isEmpty()) {
-
-                    Stock stock = quotes.get(symbol);
-                    if (stock != null && stock.getSymbol() != null) {
-
-
-                        StockQuote quote = stock.getQuote();
-
-
-                        if (quote.getPrice() != null &&
-                                quote.getChange() != null &&
-                                quote.getChangeInPercent() != null) {
-
-
-                            float price = quote.getPrice().floatValue();
-                            float change = quote.getChange().floatValue();
-                            float percentChange = quote.getChangeInPercent().floatValue();
-
-
-                            List<HistoricalQuote> history = stock.getHistory(from, to, Interval.WEEKLY);
-
-                            StringBuilder historyBuilder = new StringBuilder();
-
-                            for (HistoricalQuote it : history) {
-                                historyBuilder.append(it.getDate().getTimeInMillis());
-                                historyBuilder.append(", ");
-                                historyBuilder.append(it.getClose());
-                                historyBuilder.append("\n");
-                            }
-
-                            ContentValues quoteCV = new ContentValues();
-                            quoteCV.put(Contract.Quote.COLUMN_SYMBOL, symbol);
-                            quoteCV.put(Contract.Quote.COLUMN_PRICE, price);
-                            quoteCV.put(Contract.Quote.COLUMN_PERCENTAGE_CHANGE, percentChange);
-                            quoteCV.put(Contract.Quote.COLUMN_ABSOLUTE_CHANGE, change);
-
-
-                            quoteCV.put(Contract.Quote.COLUMN_HISTORY, historyBuilder.toString());
-
-                            quoteCVs.add(quoteCV);
-
-                            PrefUtils.setPrefStatusCode(context, PrefUtils.STATUS_OK);
-
-
-                        } else {
-                            //set pref status code not found
-                            PrefUtils.setPrefStatusCode(context, PrefUtils.STATUS_NOT_FOUND);
-
-                            PrefUtils.removeStock(context, symbol);
-
-                            //just in case
-                            context.getContentResolver().delete(Contract.Quote.makeUriForStock(symbol), null, null);
-
-                            PrefUtils.setNotFoundTicker(context, symbol);
-
-                        }
-
-
-                    } // end of if(stock!= null)
-
-                } //end of if (!symbol.isEmpty())
-
-
-            } //end of while (iterator.hasNext())
-
-            context.getContentResolver()
-                    .bulkInsert(
-                            Contract.Quote.URI,
-                            quoteCVs.toArray(new ContentValues[quoteCVs.size()]));
-
-            Intent dataUpdatedIntent = new Intent(ACTION_DATA_UPDATED);
-
-            PrefUtils.setPrefStatusCode(context, PrefUtils.STATUS_SYNC_COMPLETE);
-
-            context.sendBroadcast(dataUpdatedIntent);
-
-
-        } catch (IOException exception) {
-
-            if (exception instanceof FileNotFoundException) {
+            quotes = YahooFinance.get(quotesToGet);
+            //TODO make interval user-defined
+            YahooFinance.get(quotesToGet, from, to, Interval.WEEKLY);
+            Timber.d(quotes.toString());
+        } catch (Exception exception) {
+            if (exception instanceof StringIndexOutOfBoundsException) {
+                PrefUtils.setPrefStatusCode(context, PrefUtils.STATUS_DATA_ERROR);
+                return null;
+            } else if (exception instanceof FileNotFoundException) {
                 PrefUtils.setPrefStatusCode(context, PrefUtils.STATUS_NOT_FOUND);
-
                 //filter ticker out of url
                 Uri uri = Uri.parse(exception.getMessage());
                 String symbol = uri.getQueryParameter("s");
-
                 //remove the ticker form the list
                 PrefUtils.removeStock(context, symbol);
-
+                //TODO check this
                 //just in case
                 context.getContentResolver().delete(Contract.Quote.makeUriForStock(symbol), null, null);
-
                 //stock not fond ticker
                 PrefUtils.setNotFoundTicker(context, symbol);
-
+                return null;
+            }
+            //TODO check this
+            else {
+                PrefUtils.setPrefStatusCode(context, PrefUtils.STATUS_DATA_ERROR);
+                return null;
             }
         }
+
+        return quotes;
     }
+
+
+    public static ArrayList<ContentValues> parseQuotesIntoCVs(Map<String, Stock> quotes, Context context) {
+        ArrayList<ContentValues> quoteCVs = new ArrayList<>();
+
+        if (quotes == null || quotes.size() < 1) {
+            return quoteCVs;
+        }
+
+        Iterator<String> iterator = quotes.keySet().iterator();
+
+        while (iterator != null && iterator.hasNext()) {
+            String symbol = iterator.next();
+
+            //empty string check
+            if (!symbol.isEmpty() && quotes.containsKey(symbol)) {
+                Stock stock = quotes.get(symbol);
+
+                if (stock == null || stock.getQuote() == null) {
+                    continue;
+                }
+
+                StockQuote quote = stock.getQuote();
+                if (quote.getPrice() != null &&
+                        quote.getChange() != null &&
+                        quote.getChangeInPercent() != null) {
+
+                    StringBuilder stockHistoryStringBuilder = new StringBuilder();
+
+                    try {
+                        List<HistoricalQuote> history = stock.getHistory();
+
+                        for (HistoricalQuote it : history) {
+                            stockHistoryStringBuilder.append(it.getDate().getTimeInMillis());
+                            stockHistoryStringBuilder.append(", ");
+                            stockHistoryStringBuilder.append(it.getClose());
+                            stockHistoryStringBuilder.append("\n");
+                        }
+                    } catch (IOException ioexception) {
+                        ioexception.printStackTrace();
+                    }
+
+                    ContentValues quoteCV = new ContentValues();
+                    quoteCV.put(Contract.Quote.COLUMN_SYMBOL, symbol);
+                    quoteCV.put(Contract.Quote.COLUMN_PRICE, quote.getPrice().floatValue());
+                    quoteCV.put(Contract.Quote.COLUMN_ABSOLUTE_CHANGE, quote.getChange().floatValue());
+                    quoteCV.put(Contract.Quote.COLUMN_PERCENTAGE_CHANGE, quote.getChangeInPercent().floatValue());
+                    quoteCV.put(Contract.Quote.COLUMN_HISTORY, stockHistoryStringBuilder.toString());
+                    quoteCVs.add(quoteCV);
+
+                    PrefUtils.setPrefStatusCode(context, PrefUtils.STATUS_OK);
+                } else {
+                    //FIXME handle errors
+                    //set pref status code not found
+                    PrefUtils.setPrefStatusCode(context, PrefUtils.STATUS_NOT_FOUND);
+                    PrefUtils.setNotFoundTicker(context, symbol);
+                }
+            } //end of if (!symbol.isEmpty())
+        } //end of while (iterator.hasNext())
+
+        return quoteCVs;
+    }
+
+
+    static void updateQuotesInDB(ArrayList<ContentValues> quoteContentValues, Context context) {
+        if (quoteContentValues != null && quoteContentValues.size() > 0) {
+            context.getContentResolver()
+                    .bulkInsert(
+                            Contract.Quote.URI,
+                            quoteContentValues.toArray(new ContentValues[quoteContentValues.size()])
+                    );
+        }
+        //TODO set correct status on failure
+        Intent dataUpdatedIntent = new Intent(ACTION_DATA_UPDATED);
+        PrefUtils.setPrefStatusCode(context, PrefUtils.STATUS_SYNC_COMPLETE);
+        context.sendBroadcast(dataUpdatedIntent);
+    }
+
 
     private static void schedulePeriodic(Context context) {
         JobInfo.Builder builder = new JobInfo.Builder(PERIODIC_ID, new ComponentName(context, QuoteJobService.class));
@@ -198,42 +181,36 @@ public final class QuoteSyncJob {
                 .setPeriodic(PERIOD)
                 .setBackoffCriteria(INITIAL_BACKOFF, JobInfo.BACKOFF_POLICY_EXPONENTIAL);
 
-
         JobScheduler scheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
-
         scheduler.schedule(builder.build());
     }
 
 
     public static synchronized void initialize(final Context context) {
-
         schedulePeriodic(context);
         syncImmediately(context);
-
     }
 
+
+    //FIXME
     public static synchronized void syncImmediately(Context context) {
-
         ConnectivityManager cm =
-                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnectedOrConnecting()) {
+                (ConnectivityManager) context
+                        .getSystemService(Context.CONNECTIVITY_SERVICE);
 
+        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+
+        if (networkInfo != null && networkInfo.isConnectedOrConnecting()) {
             Intent nowIntent = new Intent(context, QuoteIntentService.class);
             context.startService(nowIntent);
-
         } else {
-
             PrefUtils.setPrefStatusCode(context, PrefUtils.STATUS_NO_NET_NO_DATA);
             JobInfo.Builder builder = new JobInfo.Builder(ONE_OFF_ID, new ComponentName(context, QuoteJobService.class));
             builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
                     .setBackoffCriteria(INITIAL_BACKOFF, JobInfo.BACKOFF_POLICY_EXPONENTIAL);
 
-
             JobScheduler scheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
             scheduler.schedule(builder.build());
-
-
         }
     }
 

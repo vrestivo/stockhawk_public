@@ -8,11 +8,9 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
-import android.support.annotation.StringDef;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -21,29 +19,22 @@ import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.common.base.MoreObjects;
 import com.udacity.stockhawk.R;
-import com.udacity.stockhawk.StockHawkApp;
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
 import com.udacity.stockhawk.sync.QuoteSyncJob;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.internal.Utils;
-import timber.log.Timber;
 
 import static com.udacity.stockhawk.ui.MainActivity.TICKER;
-import static com.udacity.stockhawk.ui.MainActivity.TWO_PANE;
 
 /**
  * Created by devbox on 1/15/17.
@@ -57,7 +48,7 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
     private static final int CHART_HANDLER = 7;
     private static final int STOCK_LOADER = 0;
     private static final String MSG_STRING = "MSG_STRING";
-    public StockAdapter adapter;
+    private StockAdapter mAdapter;
     private String mTickerNotFoundKey;
     private String mStatusPrefKey;
     private static SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
@@ -90,9 +81,6 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        //super.onCreateView(inflater, container, savedInstanceState);
-
-
         mContext = getContext();
 
         mTickerNotFoundKey = getString(R.string.pref_not_found_key);
@@ -120,8 +108,8 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
                 button(view);
             }
         });
-        adapter = new StockAdapter(mContext, this);
-        stockRecyclerView.setAdapter(adapter);
+        mAdapter = new StockAdapter(mContext, this);
+        stockRecyclerView.setAdapter(mAdapter);
         stockRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
         swipeRefreshLayout.setOnRefreshListener(this);
         swipeRefreshLayout.setRefreshing(true);
@@ -135,7 +123,7 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                String symbol = adapter.getSymbolAtPosition(viewHolder.getAdapterPosition());
+                String symbol = mAdapter.getSymbolAtPosition(viewHolder.getAdapterPosition());
                 PrefUtils.removeStock(mContext, symbol);
                 mContext.getContentResolver().delete(Contract.Quote.makeUriForStock(symbol), null, null);
             }
@@ -148,8 +136,8 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
             @Override
             public void handleMessage(Message msg) {
                 if (msg.what == CHART_HANDLER) {
-                    if (adapter.getItemCount() > 0) {
-                        loadStockChart(twoPane, adapter.getSymbolAtPosition(scrollPosition));
+                    if (mAdapter.getItemCount() > 0) {
+                        loadStockChart(twoPane, mAdapter.getSymbolAtPosition(scrollPosition));
                     }
                     else {
                         chartFragment.clearChart();
@@ -171,6 +159,9 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
 
     }
 
+    public void notifyAdapterOfDataChange(){
+        mAdapter.notifyDataSetChanged();
+    }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -217,7 +208,7 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
             PrefUtils.setPrefStatusCode(getContext(), PrefUtils.STATUS_NO_NET_OLD_DATA);
         }
 
-        adapter.setCursor(data);
+        mAdapter.setCursor(data);
         stockRecyclerView.smoothScrollToPosition(scrollPosition);
 
         //load default or last used chart
@@ -230,13 +221,13 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         swipeRefreshLayout.setRefreshing(false);
-        adapter.setCursor(null);
+        mAdapter.setCursor(null);
     }
 
 
     @Override
     public void onClick(String symbol) {
-        scrollPosition = adapter.getCursorPosition();
+        scrollPosition = mAdapter.getCursorPosition();
         loadStockChart(twoPane, symbol);
     }
 
@@ -273,7 +264,7 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
         }
 
 
-        if (!networkUp() && adapter.getItemCount() == 0) {
+        if (!networkUp() && mAdapter.getItemCount() == 0) {
             swipeRefreshLayout.setRefreshing(false);
             error.setText(getString(R.string.error_no_network));
             error.setVisibility(View.VISIBLE);

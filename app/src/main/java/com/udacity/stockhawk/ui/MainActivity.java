@@ -1,30 +1,14 @@
 package com.udacity.stockhawk.ui;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.udacity.stockhawk.R;
-import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
-import com.udacity.stockhawk.sync.QuoteSyncJob;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.internal.Utils;
-import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -46,8 +30,6 @@ public class MainActivity extends AppCompatActivity {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        //this check prevents the fragment from
-        //being recreated twice on config change
         if (savedInstanceState == null) {
 
             if (mainFragment == null) {
@@ -63,10 +45,7 @@ public class MainActivity extends AppCompatActivity {
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.main_content, mainFragment, MAIN_FRAGMENT_TAG).commit();
             }
-
         }
-
-
     }//end of onCreate()
 
 
@@ -96,9 +75,7 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_change_units) {
             PrefUtils.toggleDisplayMode(this);
             setDisplayModeMenuItemIcon(item);
-
-            mainFragment.adapter.notifyDataSetChanged();
-
+            mainFragment.notifyAdapterOfDataChange();
             return true;
         }
         else if(id == R.id.action_refresh){
